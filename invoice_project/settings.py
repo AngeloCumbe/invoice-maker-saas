@@ -21,11 +21,15 @@ ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # Database configuration
 if ENVIRONMENT == 'production':
+    ALLOWED_HOSTS = ['*']  # Railway handles domain routing
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=500)
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=500
+        )
     }
 else:
-    # Development - PostgreSQL
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -40,11 +44,11 @@ else:
 # Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+ROOT_URLCONF = 'invoice_project.urls'
+WSGI_APPLICATION = 'invoice_project.wsgi.application'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-ROOT_URLCONF = 'invoice_project.urls'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -70,7 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'production':
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = ['your-domain.com']
