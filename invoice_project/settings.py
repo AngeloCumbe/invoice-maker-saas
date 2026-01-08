@@ -16,12 +16,32 @@ ENVIRONMENT = 'production' if IS_RAILWAY else os.getenv('ENVIRONMENT', 'developm
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True' if not IS_RAILWAY else False
 
-# ALLOWED_HOSTS for Railway
+# ALLOWED_HOSTS for Railway (FIXED)
 if IS_RAILWAY:
-    # Railway dynamic domains: e.g., <project>.up.railway.app
-    railway_project_id = os.getenv('RAILWAY_PROJECT_ID')
-    ALLOWED_HOSTS = [f'{railway_project_id}.up.railway.app'] if railway_project_id else ['*']
-    ALLOWED_HOSTS += os.getenv('ALLOWED_HOSTS', '').split(',')  # Allow custom overrides
+    # Get the Railway public domain
+    railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
+    ALLOWED_HOSTS = [railway_domain] if railway_domain else []
+    
+    # Also add RAILWAY_STATIC_URL domain if different
+    railway_static = os.getenv('RAILWAY_STATIC_URL', '')
+    if railway_static:
+        # Extract domain from URL like https://web-production-db86f.up.railway.app
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(railway_static)
+            if parsed.netloc and parsed.netloc not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(parsed.netloc)
+        except:
+            pass
+    
+    # Add custom domains from environment variable
+    custom_hosts = os.getenv('ALLOWED_HOSTS', '').strip()
+    if custom_hosts:
+        ALLOWED_HOSTS.extend([h.strip() for h in custom_hosts.split(',') if h.strip()])
+    
+    # Fallback: allow *.up.railway.app pattern
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ['.up.railway.app', '.railway.app']
 else:
     ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
