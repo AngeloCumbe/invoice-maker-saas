@@ -1,2 +1,1 @@
-web: gunicorn invoice_project.wsgi --log-file -
-release: python manage.py migrate --no-input
+web: python manage.py migrate --no-input && gunicorn invoice_project.wsgi:application
