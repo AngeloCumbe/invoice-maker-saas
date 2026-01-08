@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice Confirmation - Invoice Maker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h2 class="mb-3">
+                        {% if is_new %}
+                        Invoice Created Successfully!
+                        {% else %}
+                        Invoice Edited Successfully!
+                        {% endif %}
+                    </h2>
+                    
+                    <p class="lead text-muted mb-4">
+                        Invoice <strong>{{ invoice.invoice_number }}</strong> has been created for <strong>{{ invoice.client.name }}</strong>
+                    </p>
+
+                    <div class="bg-light p-4 rounded mb-4">
+                        <div class="row mb-2">
+                            <div class="col-6 text-start"><strong>Invoice Date:</strong></div>
+                            <div class="col-6 text-end">{{ invoice.invoice_date|date:"F d, Y" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6 text-start"><strong>Due Date:</strong></div>
+                            <div class="col-6 text-end">{{ invoice.due_date|date:"F d, Y" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6 text-start"><strong>Status:</strong></div>
+                            <div class="col-6 text-end">
+                                {% if invoice.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                                {% elif invoice.status == 'sent' %}
+                                <span class="badge bg-info">Sent</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Draft</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6 text-start"><h5>Total Amount:</h5></div>
+                            <div class="col-6 text-end"><h5>{{ invoice.currency }} {{ invoice.total_amount }}</h5></div>
+                        </div>
+                    </div>
+
+                    <!-- After Invoice Creation Ad -->
+                    <div class="ad-container mb-4 p-3 border rounded" data-ad-id="confirmation-ad-001" data-placement="invoice_confirmation">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-2">📊 Track Your Finances Better!</h6>
+                                <p class="small text-muted mb-0">Get insights into your business with our premium analytics</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a href="https://example.com/analytics" class="btn btn-sm btn-primary ad-link" target="_blank">
+                                    Try Free
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'invoice_detail' invoice.pk %}" class="btn btn-primary">
+                            <i class="bi bi-eye"></i> View Invoice
+                        </a>
+                        <a href="{% url 'invoice_edit' invoice.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a href="{% url 'invoice_pdf' invoice.pk %}" class="btn btn-outline-success">
+                            <i class="bi bi-download"></i> Download PDF
+                        </a>
+                        <a href="{% url 'invoice_create' %}" class="btn btn-outline-info">
+                            <i class="bi bi-plus-circle"></i> Create Another
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-link">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Track invoice context for ads
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ad-link').forEach(link => {
+        link.addEventListener('click', function() {
+            const container = this.closest('.ad-container');
+            trackAdClick(
+                container.dataset.adId,
+                container.dataset.placement,
+                this.href,
+                'invoice_confirmation',
+                {{ invoice.pk }}
+            );
+        });
+    });
+});
+</script>
+{% endblock %}

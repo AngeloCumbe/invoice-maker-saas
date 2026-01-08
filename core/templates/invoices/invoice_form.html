@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Invoice Maker{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-file-earmark-text"></i> {{ title }}</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Invoice Form -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Invoice Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="invoice-form">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Client *</label>
+                                {{ form.client }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Currency *</label>
+                                {{ form.currency }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status *</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Due Date *</label>
+                            {{ form.due_date }}
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3">Line Items</h5>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div id="item-formset">
+                            {% for item_form in formset %}
+                            <div class="item-row mb-3 border p-3 rounded">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Description</label>
+                                        {{ item_form.description }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Quantity</label>
+                                        {{ item_form.quantity }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Unit Price</label>
+                                        {{ item_form.unit_price }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Line Total</label>
+                                        <input type="text" class="form-control line-total" readonly value="0.00">
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        {{ item_form.DELETE }}
+                                        <label class="form-check-label ms-2" for="{{ item_form.DELETE.id_for_label }}">Del</label>
+                                    </div>
+                                </div>
+                                {{ item_form.id }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" class="btn btn-outline-secondary mb-3" id="add-item-btn">
+                            <i class="bi bi-plus-circle"></i> Add Item
+                        </button>
+
+                        <hr>
+
+                        <h5 class="mb-3">Calculations</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tax Rate (%)</label>
+                                {{ form.tax_rate }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Discount Amount</label>
+                                {{ form.discount_amount }}
+                            </div>
+                        </div>
+
+                        <div class="bg-light p-3 rounded">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Subtotal:</strong></div>
+                                <div class="col-6 text-end" id="subtotal-display">0.00</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Tax:</strong></div>
+                                <div class="col-6 text-end" id="tax-display">0.00</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Discount:</strong></div>
+                                <div class="col-6 text-end" id="discount-display">0.00</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6"><h5>Total:</h5></div>
+                                <div class="col-6 text-end"><h5 id="total-display">0.00</h5></div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Invoice
+                            </button>
+                            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Ad -->
+        <div class="col-lg-3">
+            <div class="card bg-light sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <div class="ad-container text-center" data-ad-id="sidebar-ad-001" data-placement="invoice_sidebar">
+                        <h6 class="text-muted mb-3">💼 Business Tools</h6>
+                        <img src="https://via.placeholder.com/200x150/007bff/ffffff?text=CRM+Software" class="img-fluid mb-3 rounded">
+                        <p class="small mb-3">Manage your business better with our CRM solution</p>
+                        <a href="https://example.com/crm" class="btn btn-sm btn-primary ad-link w-100" target="_blank">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// INVOICE CALCULATOR with Currency Symbols
+function calculateTotals() {
+    console.log('Calculating totals...');
+    let subtotal = 0;
+
+    // Calculate line totals for each item
+    $('.item-row').each(function() {
+        const $row = $(this);
+        const isDeleted = $row.find('input[type="checkbox"][name*="DELETE"]').is(':checked');
+        
+        if (!isDeleted) {
+            const $qtyInput = $row.find('input[name*="quantity"]');
+            const $priceInput = $row.find('input[name*="unit_price"]');
+            
+            const quantity = parseFloat($qtyInput.val()) || 0;
+            const unitPrice = parseFloat($priceInput.val()) || 0;
+            const lineTotal = quantity * unitPrice;
+            
+            console.log('Row - Qty:', quantity, 'Price:', unitPrice, 'Total:', lineTotal);
+            
+            $row.find('.line-total').val(lineTotal.toFixed(2));
+            subtotal += lineTotal;
+        } else {
+            $row.find('.line-total').val('0.00');
+        }
+    });
+
+    // Get tax rate and discount
+    const taxRate = parseFloat($('#id_tax_rate').val()) || 0;
+    const discountAmount = parseFloat($('#id_discount_amount').val()) || 0;
+
+    // Calculate tax amount
+    const taxAmount = (subtotal * taxRate) / 100;
+
+    // Calculate total
+    const total = subtotal + taxAmount - discountAmount;
+
+    // Get selected currency
+    const currency = $('#id_currency').val() || 'USD';
+    
+    // Currency symbols mapping
+    const currencySymbols = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'JPY': '¥',
+        'CNY': '¥',
+        'INR': '₹',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'CHF': 'CHF',
+        'PHP': '₱',
+        'KRW': '₩',
+        'BRL': 'R$',
+        'MXN': 'MX$',
+        'ZAR': 'R',
+        'SGD': 'S$',
+        'HKD': 'HK$',
+        'NZD': 'NZ$',
+        'SEK': 'kr',
+        'NOK': 'kr',
+        'DKK': 'kr',
+        'PLN': 'zł',
+        'THB': '฿',
+        'IDR': 'Rp',
+        'MYR': 'RM',
+        'RUB': '₽',
+        'TRY': '₺',
+        'AED': 'د.إ',
+        'SAR': 'ر.س'
+    };
+    
+    const currencySymbol = currencySymbols[currency] || currency;
+
+    console.log('Subtotal:', subtotal, 'Tax:', taxAmount, 'Discount:', discountAmount, 'Total:', total, 'Currency:', currency);
+
+    // Update display with currency symbol
+    $('#subtotal-display').text(currencySymbol + ' ' + subtotal.toFixed(2));
+    $('#tax-display').text(currencySymbol + ' ' + taxAmount.toFixed(2));
+    $('#discount-display').text(currencySymbol + ' ' + discountAmount.toFixed(2));
+    $('#total-display').text(currencySymbol + ' ' + total.toFixed(2));
+}
+
+$(document).ready(function() {
+    console.log('Invoice form loaded - jQuery version:', $.fn.jquery);
+    
+    // Attach calculation events
+    $(document).on('input', 'input[name*="quantity"], input[name*="unit_price"], #id_tax_rate, #id_discount_amount', function() {
+        console.log('Input detected:', $(this).attr('name'), '=', $(this).val());
+        calculateTotals();
+    });
+    
+    // Recalculate when currency changes
+    $(document).on('change', '#id_currency', function() {
+        console.log('Currency changed to:', $(this).val());
+        calculateTotals();
+    });
+    
+    $(document).on('change', 'input[type="checkbox"][name*="DELETE"]', function() {
+        if ($(this).is(':checked')) {
+            $(this).closest('.item-row').addClass('text-muted');
+        } else {
+            $(this).closest('.item-row').removeClass('text-muted');
+        }
+        calculateTotals();
+    });
+    
+    // Get current form count
+    let formCount = parseInt($('#id_items-TOTAL_FORMS').val()) || 1;
+    console.log('Initial form count:', formCount);
+    
+    // Add item button handler
+    $('#add-item-btn').on('click', function(e) {
+        e.preventDefault();
+        console.log('Add item clicked! Current count:', formCount);
+        
+        const $container = $('#item-formset');
+        const $template = $('.item-row:first').clone();
+        
+        // Clear all input values
+        $template.find('input:not([type="hidden"]), select, textarea').val('');
+        $template.find('input[type="checkbox"]').prop('checked', false);
+        $template.find('.line-total').val('0.00');
+        $template.removeClass('text-muted');
+        
+        // Update all name and id attributes
+        $template.find('input, select, textarea').each(function() {
+            ['name', 'id'].forEach(attr => {
+                const val = $(this).attr(attr);
+                if (val) {
+                    $(this).attr(attr, val.replace(/-\d+-/, `-${formCount}-`));
+                }
+            });
+        });
+        
+        // Update label for attributes
+        $template.find('label').each(function() {
+            const forAttr = $(this).attr('for');
+            if (forAttr) {
+                $(this).attr('for', forAttr.replace(/-\d+-/, `-${formCount}-`));
+            }
+        });
+        
+        // Append new form
+        $container.append($template);
+        
+        // Increment counter
+        formCount++;
+        $('#id_items-TOTAL_FORMS').val(formCount);
+        
+        console.log('New form added! New count:', formCount);
+        calculateTotals();
+    });
+    
+    // Initial calculation after page load
+    setTimeout(function() {
+        console.log('Running initial calculation...');
+        calculateTotals();
+    }, 500);
+});
+</script>
+{% endblock %}

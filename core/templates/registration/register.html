@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Invoice Maker{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-person-plus"></i> Create Your Account</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Account Information -->
+                        <h5 class="mb-3 text-primary">Account Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Username *</label>
+                                {{ user_form.username }}
+                                {% if user_form.username.errors %}
+                                    <div class="text-danger">{{ user_form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email *</label>
+                                {{ user_form.email }}
+                                {% if user_form.email.errors %}
+                                    <div class="text-danger">{{ user_form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Password *</label>
+                                {{ user_form.password1 }}
+                                {% if user_form.password1.errors %}
+                                    <div class="text-danger">{{ user_form.password1.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirm Password *</label>
+                                {{ user_form.password2 }}
+                                {% if user_form.password2.errors %}
+                                    <div class="text-danger">{{ user_form.password2.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Business Information -->
+                        <h5 class="mb-3 text-primary">Business Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Business Name *</label>
+                                {{ profile_form.business_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Business Logo</label>
+                                {{ profile_form.business_logo }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Business Email *</label>
+                                {{ profile_form.business_email }}
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="use_same_email" name="use_same_email">
+                                    <label class="form-check-label" for="use_same_email">
+                                        Use same email as account
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Country Code *</label>
+                                {{ profile_form.phone_country_code }}
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Phone Number *</label>
+                                {{ profile_form.phone_number }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Street Address *</label>
+                            {{ profile_form.street_address }}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">City *</label>
+                                {{ profile_form.city }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">State/Province *</label>
+                                {{ profile_form.state_province }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">ZIP/Postal Code *</label>
+                                {{ profile_form.zip_postal_code }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Country *</label>
+                                {{ profile_form.country }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Preferred Currency *</label>
+                            {{ profile_form.preferred_currency }}
+                            <small class="form-text text-muted">This currency will be used for dashboard totals</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Create Account
+                            </button>
+                            <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                                Already have an account? Login
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('use_same_email').addEventListener('change', function(e) {
+    const accountEmail = document.querySelector('input[name="email"]').value;
+    const businessEmailField = document.querySelector('input[name="business_email"]');
+    if (e.target.checked) {
+        businessEmailField.value = accountEmail;
+    }
+});
+</script>
+{% endblock %}

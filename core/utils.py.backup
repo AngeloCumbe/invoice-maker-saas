@@ -1,0 +1,67 @@
+from decimal import Decimal
+import requests
+
+# Currency conversion utility with fallback rates
+def convert_currency(amount, from_currency, to_currency):
+    """Convert amount from one currency to another"""
+    if from_currency == to_currency:
+        return Decimal(str(amount))
+    
+    # Fallback exchange rates (updated periodically)
+    FALLBACK_RATES = {
+        'USD': 1.0,
+        'EUR': 0.92,
+        'GBP': 0.79,
+        'JPY': 149.50,
+        'AUD': 1.53,
+        'CAD': 1.36,
+        'CHF': 0.88,
+        'CNY': 7.24,
+        'INR': 83.12,
+        'PHP': 56.50,
+    }
+    
+    try:
+        # Try using free exchange rate API
+        url = f"https://api.exchangerate-api.com/v4/latest/{from_currency}"
+        response = requests.get(url, timeout=2)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if to_currency in data['rates']:
+                rate = data['rates'][to_currency]
+                return Decimal(str(amount * rate))
+    except Exception as e:
+        print(f"API conversion failed, using fallback rates: {e}")
+    
+    # Use fallback rates
+    try:
+        if from_currency in FALLBACK_RATES and to_currency in FALLBACK_RATES:
+            # Convert to USD first, then to target currency
+            amount_in_usd = float(amount) / FALLBACK_RATES[from_currency]
+            amount_in_target = amount_in_usd * FALLBACK_RATES[to_currency]
+            return Decimal(str(amount_in_target))
+    except Exception as e:
+        print(f"Fallback conversion error: {e}")
+    
+    # If all else fails, return original amount
+    return Decimal(str(amount))
+
+
+# Currency symbol mapping
+CURRENCY_SYMBOLS = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'AUD': 'A$',
+    'CAD': 'C$',
+    'CHF': 'Fr',
+    'CNY': '¥',
+    'INR': '₹',
+    'PHP': '₱',
+}
+
+def get_currency_symbol(currency_code):
+    """Get currency symbol for a given currency code"""
+    return CURRENCY_SYMBOLS.get(currency_code, currency_code)

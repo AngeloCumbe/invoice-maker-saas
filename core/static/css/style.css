@@ -1,0 +1,422 @@
+/* Custom Styles for Invoice Maker - Mobile Responsive */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navbar - Mobile Responsive */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-nav {
+        padding-top: 0.5rem;
+    }
+    
+    .nav-item {
+        padding: 0.25rem 0;
+    }
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    font-weight: bold;
+    border-bottom: 2px solid rgba(0,0,0,.125);
+}
+
+/* Dashboard Stats Cards */
+.card.border-primary,
+.card.border-info,
+.card.border-success,
+.card.border-warning,
+.card.border-danger {
+    border-width: 2px !important;
+}
+
+/* Mobile responsive font sizes */
+@media (max-width: 768px) {
+    .card-body h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card-body h3 {
+        font-size: 1.25rem;
+    }
+    
+    .small-responsive {
+        font-size: 1.3rem !important;
+    }
+}
+
+/* Tables - Mobile Responsive */
+.table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Invoice Card View for Mobile */
+.invoice-card {
+    transition: background-color 0.2s ease;
+}
+
+.invoice-card:hover {
+    background-color: #f8f9fa;
+}
+
+/* Overdue Styling */
+.table-danger {
+    background-color: #f8d7da !important;
+}
+
+.bg-danger-subtle {
+    background-color: #f8d7da !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fff3cd !important;
+}
+
+.invoice-card.bg-danger-subtle:hover {
+    background-color: #f5c2c7 !important;
+}
+
+.invoice-card.bg-warning-subtle:hover {
+    background-color: #ffecb5 !important;
+}
+
+/* Forms - Mobile Responsive */
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+@media (max-width: 768px) {
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+    }
+}
+
+/* Buttons */
+.btn {
+    font-weight: 500;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 576px) {
+    .btn-group {
+        display: flex;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* Invoice Items */
+.item-row {
+    transition: all 0.3s ease;
+}
+
+.item-row.text-muted {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+/* Ad Containers */
+.ad-container {
+    transition: all 0.3s ease;
+}
+
+.ad-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,.15);
+}
+
+.ad-link {
+    text-decoration: none;
+}
+
+/* Sticky Sidebar */
+@media (min-width: 992px) {
+    .sticky-top {
+        position: sticky;
+        top: 20px;
+    }
+}
+
+/* Hover Info */
+.hover-info {
+    display: block;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .hover-info {
+        display: none;
+    }
+}
+
+/* Tooltips */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Alerts - Mobile Responsive */
+.alert {
+    border-left: 4px solid;
+}
+
+.alert-success {
+    border-left-color: #198754;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+}
+
+.alert-info {
+    border-left-color: #0dcaf0;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+@media (max-width: 768px) {
+    .alert {
+        font-size: 0.875rem;
+        padding: 0.75rem;
+    }
+    
+    .alert h4, .alert h5, .alert h6 {
+        font-size: 1rem;
+    }
+}
+
+/* Status Badges */
+.badge {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+}
+
+/* Spacing Utilities - Mobile Adjustments */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    h1, h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3, h4 {
+        font-size: 1.25rem;
+    }
+    
+    h5, h6 {
+        font-size: 1rem;
+    }
+}
+
+/* Loading States */
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Success Messages */
+.message-container {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 1050;
+    max-width: 400px;
+}
+
+@media (max-width: 768px) {
+    .message-container {
+        left: 15px;
+        right: 15px;
+        max-width: none;
+    }
+}
+
+/* Image Responsive */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Touch-friendly Buttons on Mobile */
+@media (max-width: 768px) {
+    .btn,
+    .btn-sm {
+        min-height: 44px; /* iOS recommended touch target size */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-group-sm .btn {
+        min-height: 38px;
+    }
+}
+
+/* Flex utilities for mobile */
+@media (max-width: 768px) {
+    .flex-md-row {
+        flex-direction: column !important;
+    }
+    
+    .w-md-auto {
+        width: auto !important;
+    }
+}
+
+/* Gap adjustments for mobile */
+@media (max-width: 768px) {
+    .g-3 {
+        gap: 0.5rem !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .navbar, .btn, .alert, .ad-container {
+        display: none !important;
+    }
+    
+    body {
+        background-color: white;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
+
+/* Overdue specific styles */
+.overdue-indicator {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.overdue-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Expired draft indicator */
+.expired-indicator {
+    color: #ffc107;
+    font-style: italic;
+}
+
+/* Days until due color coding */
+.days-due-critical {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.days-due-warning {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.days-due-normal {
+    color: #0dcaf0;
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: rgba(13, 110, 253, 0.95);
+        padding: 1rem;
+        margin-top: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    
+    .navbar-collapse .nav-link {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Improve touch targets on mobile forms */
+@media (max-width: 768px) {
+    .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.75rem;
+        min-height: 44px;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+    }
+}
+
+/* Responsive table alternative */
+@media (max-width: 768px) {
+    .table-responsive-mobile {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
