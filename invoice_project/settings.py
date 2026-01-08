@@ -3,59 +3,56 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# Load .env file if it exists (for local development)
+# Load .env file if it exists (for local development only)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Don't raise exception if .env doesn't exist (Railway uses environment variables directly)
-# if not os.path.exists('.env'):
-#     raise Exception('Environment variables not set. Please create a .env file.')
-
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# Auto-detect Railway environment
+IS_RAILWAY = bool(os.getenv('RAILWAY_ENVIRONMENT'))
+ENVIRONMENT = 'production' if IS_RAILWAY else os.getenv('ENVIRONMENT', 'development')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+DEBUG = os.getenv('DEBUG', 'False') == 'True' if not IS_RAILWAY else False
 
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+# ALLOWED_HOSTS for Railway
+if IS_RAILWAY:
+    # Railway dynamic domains: e.g., <project>.up.railway.app
+    railway_project_id = os.getenv('RAILWAY_PROJECT_ID')
+    ALLOWED_HOSTS = [f'{railway_project_id}.up.railway.app'] if railway_project_id else ['*']
+    ALLOWED_HOSTS += os.getenv('ALLOWED_HOSTS', '').split(',')  # Allow custom overrides
+else:
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Database configuration
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # Railway or production with DATABASE_URL
+    # Railway or any environment with DATABASE_URL (prioritized)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=500,
             conn_health_checks=True,
+            ssl_require=True,  # Railway databases often require SSL
         )
     }
-elif ENVIRONMENT == 'production':
-    # Production without DATABASE_URL
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=500)
-    }
 else:
-    # Development - PostgreSQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'invoice_db'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
-    }
+    # No DATABASE_URL found - raise error to prevent localhost fallback
+    raise ValueError(
+        "DATABASE_URL is not set. For Railway, ensure your PostgreSQL service is linked to your app. "
+        "Check your Railway project dashboard > Services > PostgreSQL > Variables. "
+        "For local dev, set DATABASE_URL in your .env file."
+    )
 
 # Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if IS_RAILWAY or ENVIRONMENT == 'production':
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'invoice_project.urls'
 
@@ -74,7 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware' if IS_RAILWAY or ENVIRONMENT == 'production' else None,
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,20 +79,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# Filter out None from MIDDLEWARE
+MIDDLEWARE = [m for m in MIDDLEWARE if m is not None]
 
-# Adjust ALLOWED_HOSTS for production
-if ENVIRONMENT == 'production' or DATABASE_URL:
-    # In production, get from environment variable or allow Railway domain
-    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
-    # Security settings for production
+# Security settings for Railway/production
+if IS_RAILWAY or ENVIRONMENT == 'production':
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-else:
-    # Development
-    ALLOWED_HOSTS = ['*']
+    # Railway-specific: Ensure HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 TEMPLATES = [
     {
