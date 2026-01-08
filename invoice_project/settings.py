@@ -3,13 +3,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
+# Load .env file if it exists (for local development)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Check if .env file exists
-if not os.path.exists('.env'):
-    raise Exception('Environment variables not set. Please create a .env file.')
+# Don't raise exception if .env doesn't exist (Railway uses environment variables directly)
+# if not os.path.exists('.env'):
+#     raise Exception('Environment variables not set. Please create a .env file.')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
 
@@ -20,16 +21,24 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # Database configuration
-if ENVIRONMENT == 'production':
-    ALLOWED_HOSTS = ['*']  # Railway handles domain routing
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    # Railway or production with DATABASE_URL
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
-            conn_max_age=500
+            default=DATABASE_URL,
+            conn_max_age=500,
+            conn_health_checks=True,
         )
     }
+elif ENVIRONMENT == 'production':
+    # Production without DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=500)
+    }
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    # Development - PostgreSQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -44,11 +53,11 @@ else:
 # Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-ROOT_URLCONF = 'invoice_project.urls'
-WSGI_APPLICATION = 'invoice_project.wsgi.application'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+ROOT_URLCONF = 'invoice_project.urls'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -74,10 +83,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT == 'production':
-    ALLOWED_HOSTS = ['*']
+# Adjust ALLOWED_HOSTS for production
+if ENVIRONMENT == 'production' or DATABASE_URL:
+    # In production, get from environment variable or allow Railway domain
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+    # Security settings for production
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 else:
-    ALLOWED_HOSTS = ['your-domain.com']
+    # Development
+    ALLOWED_HOSTS = ['*']
 
 TEMPLATES = [
     {
@@ -101,10 +119,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
 
+# Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-password')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
@@ -113,7 +132,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Timezone settings
 USE_TZ = True
-TIME_ZONE = 'UTC'  # Or your preferred timezone like 'Asia/Manila'
+TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')  # Or your preferred timezone like 'Asia/Manila'
 
 # APScheduler Configuration for automatic overdue updates
 SCHEDULER_CONFIG = {
@@ -152,3 +171,6 @@ LOGGING = {
         },
     },
 }
+
+# WSGI Application
+WSGI_APPLICATION = 'invoice_project.wsgi.application'
