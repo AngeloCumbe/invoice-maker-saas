@@ -88,7 +88,7 @@ class Invoice(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices')
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='invoices')
-    invoice_number = models.CharField(max_length=50, unique=True)
+    invoice_number = models.CharField(max_length=50)  # Removed unique=True
     invoice_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
@@ -173,6 +173,7 @@ class Invoice(models.Model):
         ordering = ['-created_timestamp']
         verbose_name = "Invoice"
         verbose_name_plural = "Invoices"
+        unique_together = [['user', 'invoice_number']]  # Added this line
 
 
 class InvoiceItem(models.Model):
