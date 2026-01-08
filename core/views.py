@@ -329,9 +329,14 @@ def invoice_create(request):
             
             # Send email if status is "sent"
             if invoice.status == 'sent':
-                send_invoice_email(invoice)
+                try:
+                    send_invoice_email(invoice)
+                    messages.success(request, f'Invoice {invoice.invoice_number} created and email sent to {invoice.client.email}!')
+                except Exception as e:
+                    messages.warning(request, f'Invoice created but email failed to send: {str(e)}')
+            else:
+                messages.success(request, f'Invoice {invoice.invoice_number} created successfully!')
             
-            messages.success(request, f'Invoice {invoice.invoice_number} created successfully!')
             return redirect('invoice_confirmation', pk=invoice.pk)
     else:
         form = InvoiceForm(user=request.user)
@@ -343,10 +348,10 @@ def invoice_create(request):
         'title': 'Create Invoice'
     })
 
-
 @login_required
 def invoice_edit(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk, user=request.user)
+    old_status = invoice.status  # Track the old status
     
     if request.method == 'POST':
         form = InvoiceForm(request.POST, instance=invoice, user=request.user)
@@ -363,15 +368,21 @@ def invoice_edit(request, pk):
             
             invoice = form.save(commit=False)
             invoice.subtotal = subtotal
+            new_status = invoice.status  # Get the new status
             invoice.save()
             
             formset.save()
             
-            # Send email if status changed to "sent"
-            if invoice.status == 'sent':
-                send_invoice_email(invoice)
+            # Send email ONLY if status CHANGED to "sent"
+            if old_status != 'sent' and new_status == 'sent':
+                try:
+                    send_invoice_email(invoice)
+                    messages.success(request, f'Invoice {invoice.invoice_number} updated and email sent to {invoice.client.email}!')
+                except Exception as e:
+                    messages.warning(request, f'Invoice updated but email failed to send: {str(e)}')
+            else:
+                messages.success(request, f'Invoice {invoice.invoice_number} updated successfully!')
             
-            messages.success(request, f'Invoice {invoice.invoice_number} updated successfully!')
             return redirect('invoice_confirmation', pk=invoice.pk)
     else:
         form = InvoiceForm(instance=invoice, user=request.user)
