@@ -30,7 +30,18 @@ def convert_currency(amount, from_currency, to_currency):
         pass
     return Decimal(str(amount))
 
-CURRENCY_SYMBOLS = {'USD': '$', 'EUR': '', 'GBP': '', 'JPY': '', 'AUD': 'A$', 'CAD': 'C$', 'CHF': 'Fr', 'CNY': '', 'INR': '', 'PHP': ''}
+CURRENCY_SYMBOLS = {
+    'USD': '$', 
+    'EUR': '€', 
+    'GBP': '£', 
+    'JPY': '¥', 
+    'AUD': 'A$', 
+    'CAD': 'C$', 
+    'CHF': 'Fr', 
+    'CNY': '¥', 
+    'INR': '₹', 
+    'PHP': '₱'
+}
 
 def get_currency_symbol(currency_code):
     return CURRENCY_SYMBOLS.get(currency_code, currency_code)
